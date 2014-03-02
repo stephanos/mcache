@@ -13,7 +13,7 @@ This Go package provides an in-memory key/value cache:
 [godoc.org](http://godoc.org/github.com/101loops/mcache)
 
 ### Credit
-Source code taken and modified from https://github.com/sdming/mcache.
+Based on the source code from https://github.com/sdming/mcache.
 
 ### License
 Apache License 2.0 (see LICENSE).
