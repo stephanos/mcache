@@ -5,8 +5,8 @@ package mcache
 import "time"
 
 // startTick start a goroutine to check expire checking
-func (self *mcache) startTick() {
-	if self == nil {
+func (mc *mcache) startTick() {
+	if mc == nil {
 		return
 	}
 
@@ -15,27 +15,27 @@ func (self *mcache) startTick() {
 		interval = _minTickInterval
 	}
 
-	self.tick = time.Tick(interval)
+	mc.tick = time.Tick(interval)
 	for {
 		select {
-		case <-self.tick:
-			self.recycle()
-		case <-self.stop:
+		case <-mc.tick:
+			mc.recycle()
+		case <-mc.stop:
 			return
 		}
 	}
 }
 
-func (self *mcache) recycle() {
-	keys := self.expKeys()
-	self.DeleteMulti(keys)
+func (mc *mcache) recycle() {
+	keys := mc.expKeys()
+	mc.DeleteMulti(keys)
 }
 
-func (self *mcache) expKeys() (keys []string) {
-	self.RLock()
-	defer self.RUnlock()
+func (mc *mcache) expKeys() (keys []string) {
+	mc.RLock()
+	defer mc.RUnlock()
 
-	for k, v := range self.items {
+	for k, v := range mc.items {
 		if v.expired() {
 			if keys == nil {
 				keys = make([]string, 0, 255)

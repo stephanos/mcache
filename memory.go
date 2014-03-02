@@ -80,31 +80,31 @@ func NewMemoryCache(expire bool) *MCache {
 }
 
 // PutP set a cache entry with very long expiration time
-func (self *mcache) PutP(key string, value interface{}) {
-	self.Put(key, value, 0, AbsoluteExpiration)
+func (mc *mcache) PutP(key string, value interface{}) {
+	mc.Put(key, value, 0, AbsoluteExpiration)
 }
 
 // PutAbs set a cache entry with AbsoluteExpiration
-func (self *mcache) PutAbs(key string, value interface{}, expire time.Duration) {
-	self.Put(key, value, expire, AbsoluteExpiration)
+func (mc *mcache) PutAbs(key string, value interface{}, expire time.Duration) {
+	mc.Put(key, value, expire, AbsoluteExpiration)
 }
 
 // PutSlid set a cache entry with SlidingExpiration
-func (self *mcache) PutSlid(key string, value interface{}, expire time.Duration) {
-	self.Put(key, value, expire, SlidingExpiration)
+func (mc *mcache) PutSlid(key string, value interface{}, expire time.Duration) {
+	mc.Put(key, value, expire, SlidingExpiration)
 }
 
 // Put set a cache entry with expire time span and kind
-func (self *mcache) Put(key string, value interface{}, expire time.Duration, kind ExpirationKind) {
-	self.Lock()
-	defer self.Unlock()
+func (mc *mcache) Put(key string, value interface{}, expire time.Duration, kind ExpirationKind) {
+	mc.Lock()
+	defer mc.Unlock()
 
-	self.put(key, value, expire, kind)
+	mc.put(key, value, expire, kind)
 }
 
 // Get return a cached value, it return false if key doesn't exist
-func (self *mcache) Get(key string) (interface{}, bool) {
-	x, ok := self.get(key)
+func (mc *mcache) Get(key string) (interface{}, bool) {
+	x, ok := mc.get(key)
 	if !ok {
 		return nil, false
 	}
@@ -114,8 +114,8 @@ func (self *mcache) Get(key string) (interface{}, bool) {
 }
 
 // GetV return cached value and it's version
-func (self *mcache) GetV(key string) (interface{}, int, bool) {
-	x, ok := self.get(key)
+func (mc *mcache) GetV(key string) (interface{}, int, bool) {
+	x, ok := mc.get(key)
 	if !ok {
 		return nil, 0, false
 	}
@@ -125,18 +125,18 @@ func (self *mcache) GetV(key string) (interface{}, int, bool) {
 }
 
 // Add insert a cache entry, it return false if key exist
-func (self *mcache) Add(key string, value interface{}, expire time.Duration, kind ExpirationKind) bool {
-	self.Lock()
-	defer self.Unlock()
+func (mc *mcache) Add(key string, value interface{}, expire time.Duration, kind ExpirationKind) bool {
+	mc.Lock()
+	defer mc.Unlock()
 
-	x, ok := self.items[key]
+	x, ok := mc.items[key]
 	if !ok {
-		self.put(key, value, expire, kind)
+		mc.put(key, value, expire, kind)
 		return true
 	}
 
 	if x.Expiration >= _minExpiration && x.expired() {
-		self.put(key, value, expire, kind)
+		mc.put(key, value, expire, kind)
 		return true
 	}
 
@@ -144,64 +144,64 @@ func (self *mcache) Add(key string, value interface{}, expire time.Duration, kin
 }
 
 // Update update cache entry, it return false if key doesn't exist
-func (self *mcache) Update(key string, value interface{}) bool {
-	return self.update(key, -1, value)
+func (mc *mcache) Update(key string, value interface{}) bool {
+	return mc.update(key, -1, value)
 }
 
 // UpdateV update cache entry when version match
-func (self *mcache) UpdateV(key string, version int, value interface{}) bool {
-	return self.update(key, version, value)
+func (mc *mcache) UpdateV(key string, version int, value interface{}) bool {
+	return mc.update(key, version, value)
 }
 
 // Delete delete cache entry from the cache
-func (self *mcache) Delete(key string) {
-	self.delete(key)
+func (mc *mcache) Delete(key string) {
+	mc.delete(key)
 }
 
 // DeleteMulti delete some keys from cache
-func (self *mcache) DeleteMulti(keys []string) {
+func (mc *mcache) DeleteMulti(keys []string) {
 	if keys == nil || len(keys) == 0 {
 		return
 	}
 
-	self.Lock()
-	defer self.Unlock()
+	mc.Lock()
+	defer mc.Unlock()
 
 	for _, k := range keys {
-		delete(self.items, k)
+		delete(mc.items, k)
 	}
 }
 
 // Clear deletes everything from the cache
-func (self *mcache) Clear() {
-	self.Lock()
-	defer self.Unlock()
-	self.items = map[string]*item{}
+func (mc *mcache) Clear() {
+	mc.Lock()
+	defer mc.Unlock()
+	mc.items = map[string]*item{}
 }
 
 // Count return number of cache entry, maybe include expired
-func (self *mcache) Count() int {
-	self.Lock()
-	defer self.Unlock()
+func (mc *mcache) Count() int {
+	mc.Lock()
+	defer mc.Unlock()
 
-	n := len(self.items)
+	n := len(mc.items)
 	return n
 }
 
 // Exists return whether the key exist
-func (self *mcache) Exists(key string) bool {
-	_, ok := self.get(key)
+func (mc *mcache) Exists(key string) bool {
+	_, ok := mc.get(key)
 	return ok
 }
 
 // Keys return all cache keys
-func (self *mcache) Keys() []string {
-	self.RLock()
-	defer self.RUnlock()
+func (mc *mcache) Keys() []string {
+	mc.RLock()
+	defer mc.RUnlock()
 
 	keys := make([]string, 0, 255)
 
-	for k, v := range self.items {
+	for k, v := range mc.items {
 		if !v.expired() {
 			keys = append(keys, k)
 		}
@@ -211,28 +211,28 @@ func (self *mcache) Keys() []string {
 }
 
 // Stat return MCache stat information
-func (self *mcache) Stat() string {
-	self.RLock()
-	defer self.RUnlock()
+func (mc *mcache) Stat() string {
+	mc.RLock()
+	defer mc.RUnlock()
 
 	var buf bytes.Buffer
 	buf.WriteString("start stat \n")
-	buf.WriteString(fmt.Sprintf("Len=%d \n", len(self.items)))
-	for k, v := range self.items {
+	buf.WriteString(fmt.Sprintf("Len=%d \n", len(mc.items)))
+	for k, v := range mc.items {
 		buf.WriteString(fmt.Sprintf("key=%s; value=%v; ExpAt=%v; \n", k, v.Value, v.ExpAt))
 	}
 	buf.WriteString("end stat \n")
 	return buf.String()
 }
 
-func (self *mcache) update(key string, version int, value interface{}) bool {
-	x, ok := self.get(key)
+func (mc *mcache) update(key string, version int, value interface{}) bool {
+	x, ok := mc.get(key)
 	if !ok {
 		return false
 	}
 
-	self.Lock()
-	defer self.Unlock()
+	mc.Lock()
+	defer mc.Unlock()
 
 	if version >= 0 && x.Version != version {
 		return false
@@ -262,7 +262,7 @@ func (item *item) touch() {
 	}
 }
 
-func (self *mcache) put(key string, value interface{}, expire time.Duration, kind ExpirationKind) {
+func (mc *mcache) put(key string, value interface{}, expire time.Duration, kind ExpirationKind) {
 	var expAt time.Time
 	if expire < _minExpiration {
 		expire = 0
@@ -271,7 +271,7 @@ func (self *mcache) put(key string, value interface{}, expire time.Duration, kin
 		expAt = time.Now().Add(expire)
 	}
 
-	self.items[key] = &item{
+	mc.items[key] = &item{
 		Key:        key,
 		Value:      value,
 		Version:    0,
@@ -282,10 +282,10 @@ func (self *mcache) put(key string, value interface{}, expire time.Duration, kin
 	return
 }
 
-func (self *mcache) get(key string) (*item, bool) {
-	self.RLock()
-	x, ok := self.items[key]
-	self.RUnlock()
+func (mc *mcache) get(key string) (*item, bool) {
+	mc.RLock()
+	x, ok := mc.items[key]
+	mc.RUnlock()
 
 	if !ok {
 		return nil, false
@@ -295,15 +295,15 @@ func (self *mcache) get(key string) (*item, bool) {
 		return x, ok
 	}
 	if x.expired() {
-		//self.delete(key)
+		//mc.delete(key)
 		return nil, false
 	}
 
 	return x, ok
 }
 
-func (self *mcache) delete(key string) {
-	self.Lock()
-	defer self.Unlock()
-	delete(self.items, key)
+func (mc *mcache) delete(key string) {
+	mc.Lock()
+	defer mc.Unlock()
+	delete(mc.items, key)
 }
