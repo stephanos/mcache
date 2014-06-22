@@ -93,7 +93,9 @@ You can set TickInterval to adjust the interval of expiration check.
 
 
 ## Install
-`go get github.com/101loops/mcache`
+```bash
+go get github.com/101loops/mcache
+```
 
 ## Documentation
 [godoc.org](http://godoc.org/github.com/101loops/mcache)
