@@ -6,21 +6,10 @@ This Go package provides an in-memory key/value cache:
  - support expiration after absolute or sliding span of time
  - support CAS Update
 
-### Installation
-`go get github.com/101loops/mcache`
 
-### Documentation
-[godoc.org](http://godoc.org/github.com/101loops/mcache)
+## Usage
 
-### Credit
-Based on the source code from https://github.com/sdming/mcache.
-
-### License
-Apache License 2.0 (see LICENSE).
-
-### Usage
-
-#### Getting Started
+### Getting Started
 
 	cache := mcache.NewMCache()
 	cache.SetAbs("float", 3.14, time.Second)
@@ -29,8 +18,7 @@ Apache License 2.0 (see LICENSE).
 	<-time.After(time.Second)
 	fmt.Println(cache.Get("float"))
 
-
-#### Example
+### Example
 
 	// new cache
 	cache := mcache.NewMCache()
@@ -79,9 +67,7 @@ Apache License 2.0 (see LICENSE).
 	fmt.Println(cache.Add("Add", "Add", time.Minute, AbsoluteExpiration))
 	fmt.Println(cache.Add("Add", "Add", time.Minute, AbsoluteExpiration))
 
-
-
-#### Cas Update
+### Cas Update
 
 mcache increase version when update a cache entry, GetV can return this version.
 
@@ -97,11 +83,23 @@ mcache increase version when update a cache entry, GetV can return this version.
 	i++
 	fmt.Println(cache.UpdateV(key, i, key+strconv.Itoa(i)))
 
+### Options
 
-#### Options
+You can set TickInterval to adjust the interval of expiration check.
 
-You can set TickInterval to adjust the interval of expiration check
-
-#### Benchmark
+### Benchmark
 
 	go test -bench .*
+
+
+## Install
+`go get github.com/101loops/mcache`
+
+## Documentation
+[godoc.org](http://godoc.org/github.com/101loops/mcache)
+
+## Credit
+Based on the source code from https://github.com/sdming/mcache.
+
+## License
+Apache License 2.0 (see LICENSE).
